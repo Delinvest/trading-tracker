@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const { sequelize } = require('./models');
 require('dotenv').config();
 
 const app = express();
@@ -10,24 +11,31 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-const authRoutes = require('./routes/auth.routes');
-const accountsRoutes = require('./routes/accounts.routes');
-const tradesRoutes = require('./routes/trades.routes');
+const authRouter = require('./routes/auth.routes');
+const accountsRouter = require('./routes/accounts.routes');
+const tradesRouter = require('./routes/trades.routes');
 
-app.use('/api/auth', authRoutes);
-app.use('/api/accounts', accountsRoutes);
-app.use('/api/trades', tradesRoutes);
+app.use('/api/auth', authRouter);
+app.use('/api/accounts', accountsRouter);
+app.use('/api/trades', tradesRouter);
 
-// Route de test
+// Health check
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    message: '✅ API Trading Tracker fonctionne !',
-    timestamp: new Date().toISOString()
-  });
+  res.json({ status: 'OK', message: 'Backend is running' });
 });
 
-// Démarre le serveur
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur backend démarré sur http://localhost:${PORT}`);
-  console.log(`📊 API disponible sur http://localhost:${PORT}/api/health`);
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({ message: 'Internal server error' });
+});
+
+// Start server with force sync to recreate tables
+sequelize.sync({ force: false, alter: true }).then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}).catch((error) => {
+  console.error('Failed to sync database:', error);
+  process.exit(1);
 });
