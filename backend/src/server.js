@@ -1,13 +1,16 @@
 const express = require('express');
 const cors = require('cors');
-const { sequelize } = require('./models');
+const sequelize = require('./config/database');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['https://trading-tracker-frontend.vercel.app', 'http://localhost:3000'],
+  credentials: true
+}));
 app.use(express.json());
 
 // Routes
@@ -30,7 +33,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Internal server error' });
 });
 
-// Start server with force sync to recreate tables
+// Start server
 sequelize.sync({ force: false, alter: true }).then(() => {
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
