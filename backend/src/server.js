@@ -8,7 +8,12 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors({
-  origin: ['https://trading-tracker-frontend.vercel.app', 'http://localhost:3000'],
+  origin: [
+    'https://trading-tracker-frontend.vercel.app',
+    'https://track-record-pro.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3001'
+  ],
   credentials: true
 }));
 app.use(express.json());
